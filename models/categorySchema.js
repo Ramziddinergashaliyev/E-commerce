@@ -16,7 +16,7 @@ const categorySchema = new Schema(
   { timestamps: true }
 );
 
-export const Categories = model("category", categorySchema);
+export const Categories = model("Category", categorySchema);
 
 export const validateCategory = (body) => {
   const schema = Joi.object({

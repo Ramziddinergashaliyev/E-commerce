@@ -101,7 +101,6 @@ class AdminsController {
       });
     }
   }
-
   async createAdmin(req, res) {
     try {
       const { error } = validateAdmin(req.body);
