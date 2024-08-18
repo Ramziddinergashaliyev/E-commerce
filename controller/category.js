@@ -29,6 +29,7 @@ class CategoryController {
   async create(req, res) {
     try {
       const { error } = validateCategory(req.body);
+
       if (error) {
         return res.status(400).json({
           msg: error.details[0].message,
@@ -36,6 +37,15 @@ class CategoryController {
           payload: null,
         });
       }
+      const { title } = req.body;
+      const existingCategory = await Categories.findOne({ title });
+
+      if (existingCategory)
+        return res.status(400).json({
+          msg: "Category already exists.",
+          variant: "error",
+          payload: null,
+        });
 
       let category = await Categories.create({
         ...req.body,
@@ -75,11 +85,21 @@ class CategoryController {
   async update(req, res) {
     try {
       const { id } = req.params;
+      const { title } = req.body;
+      const existingCategory = await Categories.findOne({ title });
+
+      if (existingCategory)
+        return res.status(400).json({
+          msg: "Category already exists.",
+          variant: "error",
+          payload: null,
+        });
+
       let category = await Categories.findByIdAndUpdate(id, req.body, {
         new: true,
       });
       res.status(200).json({
-        msg: "Kategory o'zgartirildi",
+        msg: "Category Updated",
         variant: "success",
         payload: category,
       });

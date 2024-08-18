@@ -32,16 +32,13 @@ class ProductsController {
       });
     }
   }
-
   async getCategory(req, res) {
     try {
       let { categoryId } = req.params;
-      const products = await Products.find({ categoryId })
-        .populate([
-          { path: "adminId", select: ["fname", "lname"] },
-          { path: "categoryId", select: ["title"] },
-        ])
-        .sort({ createAt: -1 });
+      const products = await Products.find({ categoryId }).populate([
+        { path: "adminId", select: ["fname", "username"] },
+        { path: "categoryId", select: ["title"] },
+      ]);
       if (!products.length) {
         return res.status(500).json({
           msg: "Products is not defined",
@@ -62,7 +59,6 @@ class ProductsController {
       });
     }
   }
-
   async create(req, res) {
     try {
       const urls = req.files
@@ -98,6 +94,23 @@ class ProductsController {
     } catch (err) {
       res.status(500).json({
         msg: err.message || "Server error",
+        variant: "error",
+        payload: null,
+      });
+    }
+  }
+  async delete(req, res) {
+    try {
+      const { id } = req.params;
+      await Products.findByIdAndDelete(id, req.body);
+      res.status(200).json({
+        msg: "Delete products",
+        variant: "success",
+        payload: null,
+      });
+    } catch {
+      res.status(500).json({
+        msg: "Server error",
         variant: "error",
         payload: null,
       });

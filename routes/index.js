@@ -22,6 +22,7 @@ router.post(
   [auth, upload.array("photos")],
   ProductsController.create
 );
+router.delete("/api/product/:id", ProductsController.delete);
 
 router.get("/api/categories", CategoryController.get);
 router.post("/api/categories", [auth], CategoryController.create);

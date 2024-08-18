@@ -6,12 +6,19 @@ class AdminsController {
   async getProfile(req, res) {
     try {
       let admin = await Admins.findById(req.admin._id);
+      if (!admin || !admin.isActive) {
+        return res.status(401).json({
+          msg: "Invalid token.",
+          variant: "error",
+          payload: null,
+        });
+      }
       res.status(200).json({
-        msg: "Admin registered successfully",
+        msg: "admin registered successfully",
         variant: "success",
         payload: admin,
       });
-    } catch (err) {
+    } catch {
       res.status(500).json({
         msg: err.message,
         variant: "error",
@@ -23,39 +30,35 @@ class AdminsController {
     try {
       const id = req.admin._id;
       const { username } = req.body;
-
-      const admin = await Admins.findById(id);
-      if (!admin) {
-        return res.status(404).json({
-          msg: "Foydalanuvchi topilmadi",
+      if (req.body.password) {
+        return res.status(200).json({
+          msg: "Password jonatmang",
+          variant: "success",
+          payload: null,
+        });
+      }
+      const existingAdmin = await Admins.findOne({
+        username,
+      });
+      if (existingAdmin && id !== existingAdmin._id?.toString()) {
+        return res.status(400).json({
+          msg: "Admin already exists.",
           variant: "error",
           payload: null,
         });
       }
 
-      const checkUsername = await Admins.findOne({ username });
-      if (checkUsername && checkUsername._id.toString() !== id) {
-        return res.status(400).json({
-          msg: "Bu username mavjud",
-          variant: "warning",
-          payload: null,
-        });
-      }
-
-      const updateUser = await Admins.findByIdAndUpdate(
-        id,
-        { ...req.body, password: admin.password },
-        { new: true }
-      );
-
-      return res.status(200).json({
-        msg: "Profil yangilandi",
-        variant: "success",
-        payload: updateUser,
+      let updateAdmin = await Admins.findByIdAndUpdate(id, req.body, {
+        new: true,
       });
-    } catch (error) {
-      return res.status(500).json({
-        msg: "Server error",
+      res.status(200).json({
+        msg: "Admin updated",
+        variant: "success",
+        payload: updateAdmin,
+      });
+    } catch (err) {
+      res.status(500).json({
+        msg: err.message,
         variant: "error",
         payload: null,
       });
@@ -63,7 +66,7 @@ class AdminsController {
   }
   async get(req, res) {
     try {
-      const admins = await Admins.find();
+      const admins = await Admins.find().sort({ createdAt: -1 });
       if (!admins.length) {
         return res.status(400).json({
           msg: "Admin is not defined",
@@ -117,7 +120,7 @@ class AdminsController {
 
       if (existingAdmin)
         return res.status(400).json({
-          msg: "Bunday admin mavjud",
+          msg: "Admin already exists.",
           variant: "error",
           payload: null,
         });
@@ -131,7 +134,7 @@ class AdminsController {
       });
 
       res.status(201).json({
-        msg: "Admin yaratildi",
+        msg: "Admin registered successfully",
         variant: "success",
         payload: admin,
       });
@@ -163,8 +166,8 @@ class AdminsController {
       });
 
     const token = jwt.sign(
-      { _id: admin._id, role: admin.role },
-      process.env.SECRET,
+      { _id: admin._id, role: admin.role, isActive: admin.isActive },
+      process.env.JWT_SECRET,
       {
         expiresIn: "24h",
       }
