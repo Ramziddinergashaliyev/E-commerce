@@ -167,7 +167,7 @@ class AdminsController {
 
     const token = jwt.sign(
       { _id: admin._id, role: admin.role, isActive: admin.isActive },
-      process.env.JWT_SECRET,
+      process.env.SECRET,
       {
         expiresIn: "24h",
       }

@@ -23,6 +23,7 @@ router.post(
   ProductsController.create
 );
 router.delete("/api/product/:id", ProductsController.delete);
+router.get("/api/product/:id", ProductsController.single);
 
 router.get("/api/categories", CategoryController.get);
 router.post("/api/categories", [auth], CategoryController.create);
